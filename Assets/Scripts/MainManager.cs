@@ -11,14 +11,15 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text HighScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
-    
     private bool m_GameOver = false;
 
-    
+    private GameManager gameManager;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,10 +37,18 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        ScoreText.text = $"{gameManager.playerName}'s Score : {m_Points}";
+        HighScoreText.text = $"{gameManager.highScoreOwner}'s Score : {gameManager.allTimeHighScore}";
     }
 
     private void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene("start_menu");
+        }
         if (!m_Started)
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -65,12 +74,21 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"{gameManager.playerName}'s Score : {m_Points}";
+        if(m_Points > gameManager.allTimeHighScore)
+        {
+            HighScoreText.text = $"{gameManager.playerName}'s Score : {m_Points}";
+        }
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if(m_Points > gameManager.allTimeHighScore)
+        {
+            Debug.Log("HighScore Updated");
+            gameManager.Save_High_Score(m_Points, gameManager.playerName);
+        }
     }
 }
